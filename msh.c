@@ -378,103 +378,103 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-        int wait_bg_processes() {
-            //esperamos a que terminen los procesos en background
-            //de secuencias de comandos anteriores
-            //evitamos porcesos zombies
-            int status;
-            for (int i = 0; i < bg_processes_number; i++) {
-                //se espera empezando por el primer proceso en background
-                waitpid(bg_processes[i], &status, 0);
+int wait_bg_processes() {
+    //esperamos a que terminen los procesos en background
+    //de secuencias de comandos anteriores
+    //evitamos porcesos zombies
+    int status;
+    for (int i = 0; i < bg_processes_number; i++) {
+        //se espera empezando por el primer proceso en background
+        waitpid(bg_processes[i], &status, 0);
+    }
+    return 0;
+}
+int myCalc(char *argv[]){
+    // Esta función implementa una calculadora básica en la terminal.
+    // Primero, verifica la validez de los argumentos proporcionados.
+    // Luego, realiza la operación solicitada y muestra el resultado.
+
+    long long int acc; // Esta variable local almacena el valor de la variable de entorno 'Acc'.
+    char *acc_str=(char *) malloc(sizeof(char)); // Esta variable local almacena el valor de 'Acc' en formato de cadena.
+    long long int resultado = 0; // Esta variable almacena el resultado de la operación.
+    int resto = 0; // Esta variable almacena el resto de la operación de división.
+
+    // Verifica que el comando tenga exactamente tres argumentos: operando_1, operador, operando_2.
+    if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL || argv[4] != NULL){
+        fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
+        return -1;
+    } 
+
+    // Verifica que los operandos sean números válidos.
+    if ((atoi(argv[1]) == 0 && strcmp(argv[1],"0")!=0) || (atoi(argv[3]) == 0 && strcmp(argv[3],"0")!=0)){
+        fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
+        return -1;
+    }
+
+    // Verifica que el operador sea una de las operaciones permitidas: add, mul, div.
+    if (strcmp(argv[2], "add") != 0 && strcmp(argv[2], "mul") != 0 && strcmp(argv[2], "div") != 0){
+        fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
+        return -1;
+    }
+    
+    // Dependiendo del primer carácter del operador, selecciona la operación a realizar.
+    switch (argv[2][0]){
+        case 'a': // SUMA
+            // Si la variable de entorno 'Acc' no existe, se crea con valor 0.
+            if (getenv("Acc") == NULL){
+                setenv("Acc", "0", 1);
             }
-            return 0;
-        }
-        int myCalc(char *argv[]){
-            // Esta función implementa una calculadora básica en la terminal.
-            // Primero, verifica la validez de los argumentos proporcionados.
-            // Luego, realiza la operación solicitada y muestra el resultado.
-
-            long long int acc; // Esta variable local almacena el valor de la variable de entorno 'Acc'.
-            char *acc_str=(char *) malloc(sizeof(char)); // Esta variable local almacena el valor de 'Acc' en formato de cadena.
-            long long int resultado = 0; // Esta variable almacena el resultado de la operación.
-            int resto = 0; // Esta variable almacena el resto de la operación de división.
-
-            // Verifica que el comando tenga exactamente tres argumentos: operando_1, operador, operando_2.
-            if (argv[1] == NULL || argv[2] == NULL || argv[3] == NULL || argv[4] != NULL){
-                fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
-                return -1;
-            } 
-
-            // Verifica que los operandos sean números válidos.
-            if ((atoi(argv[1]) == 0 && strcmp(argv[1],"0")!=0) || (atoi(argv[3]) == 0 && strcmp(argv[3],"0")!=0)){
-                fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
-                return -1;
-            }
-
-            // Verifica que el operador sea una de las operaciones permitidas: add, mul, div.
-            if (strcmp(argv[2], "add") != 0 && strcmp(argv[2], "mul") != 0 && strcmp(argv[2], "div") != 0){
-                fprintf(stdout, "[ERROR] La estructura del comando es mycalc <operando_1> <add/mul/div> <operando_2>\n");
-                return -1;
-            }
+            // Calcula el resultado de la suma.
+            resultado = atoi(argv[1]) + atoi(argv[3]);
             
-            // Dependiendo del primer carácter del operador, selecciona la operación a realizar.
-            switch (argv[2][0]){
-                case 'a': // SUMA
-                    // Si la variable de entorno 'Acc' no existe, se crea con valor 0.
-                    if (getenv("Acc") == NULL){
-                        setenv("Acc", "0", 1);
-                    }
-                    // Calcula el resultado de la suma.
-                    resultado = atoi(argv[1]) + atoi(argv[3]);
-                    
-                    // Modifica 'Acc' sumándole el resultado.
-                    acc = atoll(getenv("Acc"));
-                    acc += resultado;
-                    // Convierte 'acc' a cadena.
-                    acc_str = malloc(sizeof(char)*int_digits(acc));
-                    sprintf(acc_str, "%lld", acc);
-                    // Guarda 'acc_str' en la variable de entorno 'Acc'.
-                    setenv("Acc", acc_str, 1);
-                    
-                    // Muestra el resultado por pantalla.
-                    fprintf(stderr, "[OK] %s + %s = %lld; Acc %lld\n", argv[1], argv[3], resultado, acc);
-                    break;
-                
-                case 'm': // MULTIPLICACION
-                    // Calcula el resultado de la multiplicación.
-                    resultado = atoi(argv[1]) * atoi(argv[3]);
-                    
-                    // Muestra el resultado por pantalla.
-                    fprintf(stderr, "[OK] %s * %s = %lld\n", argv[1], argv[3], resultado);
-                    break;
-                
-                case 'd': // DIVISION
-                    // Verifica que el divisor no sea 0.
-                    if (atoi(argv[3])==0){ 
-                        fprintf(stdout, "[ERROR] Division por 0\n"); 
-                        return -1;
-                    }
-                    // Calcula el resultado y el resto de la división.
-                    resultado = atoi(argv[1]) / atoi(argv[3]);
-                    resto = atoi(argv[1]) % atoi(argv[3]);
-                    
-                    // Muestra el resultado y el resto por pantalla.
-                    fprintf(stderr, "[OK] %s / %s = %lld; Resto %d\n", argv[1], argv[3], resultado, resto);
-                    break;
-            }
-            return 0; // Retorna 0 si la operación se realizó con éxito.
-        }
-
-        int int_digits(long long int n){
-            // Esta función calcula el número de dígitos de un número entero.
-            int digits = 0;
-            while (n != 0){
-                n /= 10;
-                digits++;
-            }
-            return digits;
-        }
+            // Modifica 'Acc' sumándole el resultado.
+            acc = atoll(getenv("Acc"));
+            acc += resultado;
+            // Convierte 'acc' a cadena.
+            acc_str = malloc(sizeof(char)*int_digits(acc));
+            sprintf(acc_str, "%lld", acc);
+            // Guarda 'acc_str' en la variable de entorno 'Acc'.
+            setenv("Acc", acc_str, 1);
+            
+            // Muestra el resultado por pantalla.
+            fprintf(stderr, "[OK] %s + %s = %lld; Acc %lld\n", argv[1], argv[3], resultado, acc);
+            break;
         
+        case 'm': // MULTIPLICACION
+            // Calcula el resultado de la multiplicación.
+            resultado = atoi(argv[1]) * atoi(argv[3]);
+            
+            // Muestra el resultado por pantalla.
+            fprintf(stderr, "[OK] %s * %s = %lld\n", argv[1], argv[3], resultado);
+            break;
+        
+        case 'd': // DIVISION
+            // Verifica que el divisor no sea 0.
+            if (atoi(argv[3])==0){ 
+                fprintf(stdout, "[ERROR] Division por 0\n"); 
+                return -1;
+            }
+            // Calcula el resultado y el resto de la división.
+            resultado = atoi(argv[1]) / atoi(argv[3]);
+            resto = atoi(argv[1]) % atoi(argv[3]);
+            
+            // Muestra el resultado y el resto por pantalla.
+            fprintf(stderr, "[OK] %s / %s = %lld; Resto %d\n", argv[1], argv[3], resultado, resto);
+            break;
+    }
+    return 0; // Retorna 0 si la operación se realizó con éxito.
+}
+
+int int_digits(long long int n){
+    // Esta función calcula el número de dígitos de un número entero.
+    int digits = 0;
+    while (n != 0){
+        n /= 10;
+        digits++;
+    }
+    return digits;
+}
+
 
 
        
