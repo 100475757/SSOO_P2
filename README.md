@@ -55,8 +55,9 @@ MSH>> ls -l
 (total de archivos listados)
 MSH>> mycalc 3 add 5
 [OK] 3 + 5 = 8; Acc 8
-MSH>> mytime
-00:05:23
+MSH>> myhistory
+1: ls -l
+2: mycalc 3 add 5
 ```
 
 Este ejemplo muestra un caso básico de cómo interactuar con el programa.
